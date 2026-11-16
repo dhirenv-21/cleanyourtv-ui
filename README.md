@@ -92,6 +92,46 @@ Gemini CLI), as with CleanYourTV.
 The assistant backs up, debloats, builds and installs the home screen, and checks each step with screenshots from the
 TV. The debloat, the supported TVs and how to go back are in [CleanYourTV's README](README.cleanyourtv.md).
 
+## Using it with Claude
+
+[Claude Code](https://claude.com/claude-code) (in the terminal, or the Code tab of the Claude desktop app) can do the
+whole install for you. It reads [`CLAUDE.md`](CLAUDE.md) and [`AGENTS.md`](AGENTS.md) from this repo, which hold the
+safety rules, so open it **inside the cloned folder**.
+
+1. **Get the repo.** On Windows, turn on long paths first, or the checkout stops on the add-ons' deep folders:
+   ```bash
+   git clone -c core.longpaths=true https://github.com/matheus-caldeira/cleanyourtv-ui.git
+   cd cleanyourtv-ui
+   ```
+2. **Prepare the TV.** Developer options → **USB debugging** on (and **Network debugging** if there is one), and note
+   its IP under Settings → Network & Internet → your Wi-Fi.
+3. **Start Claude Code in that folder** (`claude` in the terminal, or pick the folder in the desktop app) and ask in
+   plain words. Pick the prompt that fits:
+
+   | You want | Ask Claude |
+   |---|---|
+   | Just the home screen, nothing removed | *"Install the latest CleanYourTV UI release APK on my Android TV at 192.168.1.50 and make it the Home screen. Set up ADB if I don't have it."* |
+   | Debloat + home screen | Paste [`PROMPT.md`](PROMPT.md) with your TV model and add: *"Use this fork's home screen in `launcher-ui/` instead of `launcher/`."* |
+   | Change settings later | *"Push a config.json to my TV with my city, this shelf order: Netflix, YouTube, Prime Video."* |
+   | Go back to the stock launcher | *"Make Google TV's launcher Home again and re-enable what you disabled."* |
+
+4. **Approve on the TV.** Accept "Allow USB debugging?" (tick *Always allow*) when Claude connects.
+5. **Answer its questions.** Claude asks before anything that changes how the TV behaves, for example disabling
+   Google TV's launcher, and backs up the package list to `backup/` (kept out of git) first.
+6. **Add the TMDB key yourself.** Get one free at themoviedb.org → Settings → API, then on the TV: Home → ⚙ →
+   **TMDB account**. Keep the key out of the chat.
+7. **Close ADB when done.** Ask Claude to check that port 5555 is closed after you switch Network debugging off.
+
+Notes from a real install (Sony BRAVIA, Google TV, Android 14):
+
+- `adb` comes from Google's platform-tools; on Windows Claude can install it with
+  `winget install Google.PlatformTools`.
+- On Google TV, `set-home-activity` alone may not stick: Google TV's launcher (`launcherx`) and `setupwraith` rank
+  above this app. Claude disables both with `pm disable-user` (no uninstall), after checking that setupwraith does not
+  own the Wi-Fi network. Undo with `adb shell pm enable <package>`.
+- Keep the clone in a folder you own and pull updates with `git pull`; with a fork, add the original as `upstream`
+  and run `git pull upstream main`.
+
 ## From the release APK
 
 One APK serves every TV: download `CleanYourTV-UI-<version>.apk` from the
